@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "956381392925",
+    "project_id": "my-project-1484691894475"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956381392925:android:3e38bbca9f3c25cc",
+        "android_client_info": {
+          "package_name": "com.posquity.facebooklogindemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956381392925-gdclkpr0on8mrhpdli2vnvusgjqa0g9v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.posquity.facebooklogindemo",
+            "certificate_hash": "62053de7adda245e421cb53faa477b44d25dc01b"
+          }
+        },
+        {
+          "client_id": "956381392925-1uk6kv1la4atoc133efc7ohdc74n6o10.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9K73V4-UaAnzVlZhHDUh4WK_d4T3a9_M"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
