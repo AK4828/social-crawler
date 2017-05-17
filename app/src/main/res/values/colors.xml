@@ -5,4 +5,6 @@
     <color name="colorAccent">#00bcd4</color>
     <color name="facebookButton">#4267b2</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray">#E0E0E0</color>
 </resources>

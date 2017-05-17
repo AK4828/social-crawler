@@ -4,13 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -21,6 +21,14 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.posquity.facebooklogindemo.R;
 
 import org.json.JSONException;
@@ -28,26 +36,43 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     private CallbackManager callbackManager;
-    private Button buttonFb;
+    private LoginButton buttonFb;
+    private SignInButton buttonGoogle;
+    private GoogleApiClient googleApiClient;
+    private static final int RC_SIGN_IN = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_login);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        buttonFb = (Button) findViewById(R.id.facebook_login);
+        buttonFb = (LoginButton) findViewById(R.id.facebook_login);
+        buttonFb.setReadPermissions("email");
+
+        buttonGoogle = (SignInButton) findViewById(R.id.google_login);
+        buttonGoogle.setSize(SignInButton.SIZE_STANDARD);
         setSupportActionBar(toolbar);
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
+        GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail().build();
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, signInOptions)
+                .enableAutoManage(this, this)
+                .build();
 
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        String currentAccessToken = sharedPref.getString("currentAccessToken", "");
+        String currentFacebookAccessToken = sharedPref.getString("currentFacebookAccessToken", "");
+        String currentGoogleAccessToken = sharedPref.getString("currentGoogleAccessToken", "");
 
-        if (!currentAccessToken.isEmpty()) {
+        if (!currentFacebookAccessToken.isEmpty()) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        } else if (!currentGoogleAccessToken.isEmpty()) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
         }
 
@@ -57,12 +82,23 @@ public class LoginActivity extends AppCompatActivity {
                 onFbLoginClicked();
             }
         });
+        buttonGoogle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onGoogleLoginClicked();
+            }
+        });
 
+    }
+
+    private void onGoogleLoginClicked() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     private void onFbLoginClicked() {
         callbackManager = CallbackManager.Factory.create();
-        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email","user_photos","public_profile"));
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "user_photos", "public_profile"));
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -78,11 +114,11 @@ public class LoginActivity extends AppCompatActivity {
                                     try {
                                         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
                                         SharedPreferences.Editor editor = preferences.edit();
-                                        editor.putString("currentAccessToken", AccessToken.getCurrentAccessToken().getToken());
-                                        editor.commit();
+                                        editor.putString("currentFacebookAccessToken", AccessToken.getCurrentAccessToken().getToken());
+                                        editor.apply();
 
                                         String jsonresult = String.valueOf(json);
-                                        System.out.println("JSON Result"+jsonresult);
+                                        System.out.println("JSON Result" + jsonresult);
 
                                         String str_email = json.getString("email");
                                         String str_id = json.getString("id");
@@ -99,13 +135,15 @@ public class LoginActivity extends AppCompatActivity {
 
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
             }
+
             @Override
             public void onCancel() {
-                Log.d("CANCEL","On cancel");
+                Log.d("CANCEL", "On cancel");
             }
+
             @Override
             public void onError(FacebookException error) {
-                Log.d("ERROR",error.toString());
+                Log.d("ERROR", error.toString());
             }
         });
     }
@@ -114,7 +152,24 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            googleSignInResult(result);
+        } else {
+            callbackManager.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void googleSignInResult(GoogleSignInResult result) {
+        if (result.isSuccess()) {
+            GoogleSignInAccount account = result.getSignInAccount();
+
+            SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("currentGoogleAccessToken", account.getIdToken());
+            editor.apply();
+        }
+
     }
 
     @Override
@@ -133,4 +188,10 @@ public class LoginActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
 }

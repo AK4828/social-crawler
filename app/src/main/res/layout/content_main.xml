@@ -13,27 +13,46 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:text="Login layout"
             android:textSize="25sp"
-            android:textStyle="bold"
-            android:text="Login layout"/>
+            android:textStyle="bold" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
-        android:gravity="bottom">
-        <Button
+        android:gravity="bottom"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:src="@drawable/nyanmaru" />
+
+        <com.facebook.login.widget.LoginButton
             android:id="@+id/facebook_login"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/facebookButton"
-            android:textColor="@color/white"
-            android:text="Login with Facebook" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"/>
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/google_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@color/gray"
+            android:text="Login with Google"
+            android:textColor="@color/black" />
     </LinearLayout>
 
 
